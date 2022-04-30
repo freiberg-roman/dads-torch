@@ -14,7 +14,7 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 
-init_str = Path("pts/__init__.py").read_text()
+init_str = Path("dads/__init__.py").read_text()
 version = init_str.split("__version__ = ")[1].rstrip().strip('"')
 
 setup(

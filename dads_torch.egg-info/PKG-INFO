@@ -1,0 +1,22 @@
+Metadata-Version: 2.1
+Name: dads-torch
+Version: 0.0.1
+Summary: DADS implementation using pytorch
+Home-page: https://github.com/freiberg-roman/dads-torch
+Author: Roman Freiberg
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Provides-Extra: dev
+License-File: LICENSE
+
+# dads-torch
+pytorch implementation of dads
+
+

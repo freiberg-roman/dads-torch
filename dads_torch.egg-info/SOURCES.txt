@@ -1,0 +1,11 @@
+LICENSE
+README.md
+setup.cfg
+setup.py
+dads/__init__.py
+dads_torch.egg-info/PKG-INFO
+dads_torch.egg-info/SOURCES.txt
+dads_torch.egg-info/dependency_links.txt
+dads_torch.egg-info/not-zip-safe
+dads_torch.egg-info/requires.txt
+dads_torch.egg-info/top_level.txt
