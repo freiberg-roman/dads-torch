@@ -6,7 +6,7 @@ defaults:
   - wandb: sweep
 
 root_dir: "./exp"
-mode: "learn_skills"  # others are
+mode: "mppi_test"  # others are
 
 hydra:
   run:

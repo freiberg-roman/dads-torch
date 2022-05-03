@@ -1,5 +1,3 @@
-from typing import Callable, Optional, Sequence
-
 import torch
 
 from dads.utils.math_helper import truncated_normal
@@ -14,47 +12,48 @@ class MPPIOptimizer:
 
     def __init__(
         self,
-        num_iterations: int,
-        population_size: int,
-        gamma: float,
-        sigma: float,
-        beta: float,
-        lower_bound: Sequence[Sequence[float]],
-        upper_bound: Sequence[Sequence[float]],
-        device: torch.device,
+        cfg,
+        device="cuda",
     ):
-        super().__init__()
-        self.planning_horizon = len(lower_bound)
-        self.population_size = population_size
-        self.action_dimension = len(lower_bound[0])
+        device = torch.device(device)
+        self.planning_horizon = cfg.horizon
+        self.population_size = cfg.population_size
+        self.action_dimension = len(cfg.lower_bound)
         self.mean = torch.zeros(
             (self.planning_horizon, self.action_dimension),
             device=device,
             dtype=torch.float32,
         )
 
-        self.lower_bound = torch.tensor(lower_bound, device=device, dtype=torch.float32)
-        self.upper_bound = torch.tensor(upper_bound, device=device, dtype=torch.float32)
-        self.var = sigma**2 * torch.ones_like(self.lower_bound)
-        self.beta = beta
-        self.gamma = gamma
-        self.refinements = num_iterations
-        self.device = device
+        self.lower_bound = torch.tensor(
+            cfg.lower_bound, device=device, dtype=torch.float32
+        )
+        self.upper_bound = torch.tensor(
+            cfg.upper_bound, device=device, dtype=torch.float32
+        )
+        self.var = cfg.sigma**2 * torch.ones_like(self.lower_bound)
+        self.beta = cfg.beta
+        self.gamma = cfg.gamma
+        self.refinements = cfg.refinements
 
-    def _eval_actions(self, actions):
-        return actions
+    def _eval_actions(self, actions, plannable):
+        values = torch.zeros(len(actions))
+
+        for i in len(actions):
+            values[i] = plannable(actions[i])
+        return values
 
     def set_model(self, model):
         pass
 
     def optimize(
         self,
-        callback: Optional[Callable[[torch.Tensor, torch.Tensor, int], None]] = None,
+        plannable,
     ) -> torch.Tensor:
         past_action = self.mean[0]
         self.mean[:-1] = self.mean[1:].clone()
 
-        for k in range(self.refinements):
+        for _ in range(self.refinements):
             # sample noise and update constrained variances
             noise = torch.empty(
                 size=(
@@ -90,11 +89,8 @@ class MPPIOptimizer:
             population = torch.where(
                 population < self.lower_bound, self.lower_bound, population
             )
-            values = self._eval_actions(population)
+            values = self._eval_actions(population, plannable)
             values[values.isnan()] = -1e-10
-
-            if callback is not None:
-                callback(population, values, k)
 
             # weight actions
             weights = torch.reshape(
