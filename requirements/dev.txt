@@ -3,3 +3,4 @@ hydra-core==1.1.2
 torch==1.11.0
 numpy==1.22.3
 gym==0.23.1
+pytest==7.1.2
