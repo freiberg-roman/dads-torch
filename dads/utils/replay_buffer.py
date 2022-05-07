@@ -32,17 +32,29 @@ class ReplayBuffer(ABC):
     def add(self, state, next_state, action, reward, done, skill):
         pass
 
-    @abstractmethod
     def add_step(self, time_step: EnvStep):
-        pass
+        self.add(
+            time_step.state,
+            time_step.next_state,
+            time_step.action,
+            time_step.reward,
+            time_step.done,
+            time_step.skill,
+        )
 
     @abstractmethod
     def add_batch(self, states, next_states, actions, rewards, dones, skills):
         pass
 
-    @abstractmethod
     def add_batch_steps(self, time_steps: EnvSteps):
-        pass
+        self.add_batch(
+            time_steps.states,
+            time_steps.next_states,
+            time_steps.actions,
+            time_steps.rewards,
+            time_steps.dones,
+            time_steps.skills,
+        )
 
     @abstractmethod
     def get_iter(self, it, batch_size):
@@ -87,16 +99,6 @@ class RandomRB(ReplayBuffer):
         self._capacity = min(self._capacity + 1, self._cfg.capacity)
         self._ind = (self._ind + 1) % self._cfg.capacity
 
-    def add_step(self, time_step: EnvStep):
-        self.add(
-            time_step.state,
-            time_step.next_state,
-            time_step.action,
-            time_step.reward,
-            time_step.done,
-            time_step.skill,
-        )
-
     def add_batch(self, states, next_states, actions, rewards, dones, skills):
         length_batch = len(states)
         start_ind = self._ind
@@ -125,16 +127,6 @@ class RandomRB(ReplayBuffer):
             self._ind = self._ind + length_batch
             self._capacity = max(self._capacity, self._ind)
 
-    def add_batch_steps(self, time_steps: EnvSteps):
-        self.add_batch(
-            time_steps.states,
-            time_steps.next_states,
-            time_steps.actions,
-            time_steps.rewards,
-            time_steps.dones,
-            time_steps.skills,
-        )
-
     def get_iter(self, it, batch_size):
         return RandomBatchIter(self, it, batch_size)
 
@@ -150,11 +142,62 @@ class RandomRB(ReplayBuffer):
             )
         else:
             raise ValueError(
-                "There are not enough time_steps stores to access this item"
+                "There are not enough time_steps stored to access this item"
             )
 
     def __len__(self):
         return self._capacity
+
+
+class RandomValidationRB(ReplayBuffer):
+    def __init__(self, cfg, val_percentage):
+        self._train_buffer = RandomRB(cfg)
+        self._val_buffer = RandomRB(cfg)
+        self._val_percentage = val_percentage
+
+    def __len__(self):
+        return len(self._val_buffer) + len(self._train_buffer)
+
+    def get_iter(self, it, batch_size):
+        return self._train_buffer.get_iter(it, batch_size), self._val_buffer.get_iter(
+            it, batch_size
+        )
+
+    def add(self, state, next_state, action, reward, done, skill):
+        if (
+            len(self._train_buffer) == 0
+            or len(self._val_buffer) / len(self) >= self._val_percentage
+        ):
+            self._train_buffer.add(state, next_state, action, reward, done, skill)
+        else:
+            self._val_buffer.add(state, next_state, action, reward, done, skill)
+
+    def add_batch(self, states, next_states, actions, rewards, dones, skills):
+        if (
+            len(self._train_buffer) == 0
+            or len(self._val_buffer) / len(self) >= self._val_percentage
+        ):
+            self._train_buffer.add_batch(
+                states, next_states, actions, rewards, dones, skills
+            )
+        else:
+            self._val_buffer.add_batch(
+                states, next_states, actions, rewards, dones, skills
+            )
+
+    def __getitem__(self, item):
+        if item > len(self._train_buffer):
+            return self._val_buffer[item - len(self._train_buffer)]
+        else:
+            return self._train_buffer[item]
+
+    @property
+    def train_buffer(self):
+        return self._train_buffer
+
+    @property
+    def val_buffer(self):
+        return self._val_buffer
 
 
 class RandomBatchIter:

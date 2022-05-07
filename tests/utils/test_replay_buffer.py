@@ -1,5 +1,5 @@
 import numpy as np
-from dads.utils import RandomRB, EnvStep, EnvSteps
+from dads.utils import RandomRB, EnvStep, EnvSteps, RandomValidationRB
 from omegaconf import OmegaConf
 
 
@@ -103,3 +103,30 @@ def test_random_rb_iter():
         assert len(batch) == 3
 
     assert iter == 5
+
+
+def test_random_val_rb():
+    cfg = {
+        "capacity": 10000,
+        "env": {
+            "state_dim": 4,
+            "action_dim": 1,
+            "skill_dimensions": 6,
+            "skill_continuous": True,
+        },
+    }
+    rv_buffer = RandomValidationRB(OmegaConf.create(cfg), val_percentage=0.2)
+
+    state = np.random.randn(4)
+    next_state = np.random.randn(4)
+    action = np.random.randn(1)
+    reward = 1.0
+    done = False
+    skill = np.random.randn(6)
+    step = EnvStep(state, next_state, action, reward, done, skill)
+
+    for _ in range(10):
+        rv_buffer.add_step(step)
+
+    assert len(rv_buffer.train_buffer) == 8
+    assert len(rv_buffer.val_buffer) == 2
