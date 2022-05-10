@@ -1,1 +1,2 @@
-from .sac.agent import SAC  # noqa: F401
+from .dynamics.moe import MixtureOfExperts
+from .sac.agent import SAC

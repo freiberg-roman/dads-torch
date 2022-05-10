@@ -40,7 +40,7 @@ class MixtureOfExperts(nn.Module):
         means = torch.stack(means, 1)
 
         ind_expert_dist = Independent(
-            MultivariateNormal(means, torch.eye(means.size())), 1
+            MultivariateNormal(means, torch.eye(means.size(dim=-1))), 0
         )
         return MixtureSameFamily(categorical_experts, ind_expert_dist)
 
@@ -53,5 +53,15 @@ class MixtureOfExperts(nn.Module):
         log_prob = self.log_prob(state, skill, next_state)
         return -log_prob.mean()  # NLL
 
-    def pred_next(self, deterministic=False):
-        pass
+    def pred_next(self, state, skill, sample_n=1, deterministic=False):
+        if not deterministic:
+            pred_delta = self.forward(state, skill).sample((sample_n,))
+        else:
+            pred_delta = self.forward(state, skill).mean
+
+        # denorm pred_delta
+        pred_delta = (
+            pred_delta * torch.sqrt(self.bb_out.running_var + self.bb_out.eps)
+            + self.bb_out.running_mean
+        )
+        return state + pred_delta
