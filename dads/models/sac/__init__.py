@@ -1,1 +1,1 @@
-from .networks import DeterministicPolicy, GaussianPolicy, QNetwork
+from .networks import GaussianPolicy, QNetwork

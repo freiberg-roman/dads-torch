@@ -8,13 +8,22 @@ from torch.distributions.multivariate_normal import MultivariateNormal
 
 
 class MixtureOfExperts(nn.Module):
-    def __init__(self, state_dim, skill_dim, hidden_dim=1024, num_experts=4):
+    def __init__(
+        self,
+        state_dim,
+        skill_dim,
+        num_coord=0,
+        prep_input_fn=lambda x: x,
+        hidden_dim=1024,
+        num_experts=4,
+    ):
         super(MixtureOfExperts, self).__init__()
 
-        self.bn_in = nn.BatchNorm1d(state_dim)
+        self.bn_in = nn.BatchNorm1d(state_dim - num_coord)
         self.bb_out = nn.BatchNorm1d(state_dim)
+        self._prep_input_fn = prep_input_fn
 
-        self.linear1 = nn.Linear(state_dim + skill_dim, hidden_dim)
+        self.linear1 = nn.Linear(state_dim + skill_dim - num_coord, hidden_dim)
         self.linear2 = nn.Linear(hidden_dim, hidden_dim)
         self.expert_log_prob_contribution = nn.Linear(hidden_dim, num_experts)
         self.expert_heads = []
@@ -25,7 +34,7 @@ class MixtureOfExperts(nn.Module):
         self._skill_dim = skill_dim
 
     def forward(self, state, skill):
-        n_state = self.bn_in(state)
+        n_state = self.bn_in(self._prep_input_fn(state))
         net_in = torch.cat([n_state, skill], 1)
 
         x1 = F.silu(self.linear1(net_in))
@@ -65,3 +74,6 @@ class MixtureOfExperts(nn.Module):
             + self.bb_out.running_mean
         )
         return state + pred_delta
+
+    def to(self):
+        pass  # TODO

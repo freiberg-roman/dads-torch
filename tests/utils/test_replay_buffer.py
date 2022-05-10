@@ -9,7 +9,7 @@ def create_simple_buffer():
         "env": {
             "state_dim": 4,
             "action_dim": 1,
-            "skill_dimensions": 6,
+            "skill_dim": 6,
             "skill_continuous": True,
         },
     }
@@ -22,7 +22,7 @@ def test_random_rb_simple_index():
         "env": {
             "state_dim": 3,
             "action_dim": 2,
-            "skill_dimensions": 5,
+            "skill_dim": 5,
             "skill_continuous": True,
         },
     }
@@ -66,7 +66,7 @@ def test_random_rb_overflow():
         "env": {
             "state_dim": 4,
             "action_dim": 1,
-            "skill_dimensions": 6,
+            "skill_dim": 6,
             "skill_continuous": True,
         },
     }
@@ -111,7 +111,7 @@ def test_random_val_rb():
         "env": {
             "state_dim": 4,
             "action_dim": 1,
-            "skill_dimensions": 6,
+            "skill_dim": 6,
             "skill_continuous": True,
         },
     }

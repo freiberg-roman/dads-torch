@@ -80,13 +80,9 @@ class RandomRB(ReplayBuffer):
         self._rews = np.empty(cfg.capacity, dtype=np.float32)
         self._dones = np.empty(cfg.capacity, dtype=bool)
         if cfg.env.skill_continuous:
-            self._skills = np.empty(
-                (cfg.capacity, cfg.env.skill_dimensions), dtype=np.float32
-            )
+            self._skills = np.empty((cfg.capacity, cfg.env.skill_dim), dtype=np.float32)
         else:
-            self._skills = np.empty(
-                (cfg.capacity, cfg.env.skill_dimensions), dtype=np.int32
-            )
+            self._skills = np.empty((cfg.capacity, cfg.env.skill_dim), dtype=np.int32)
 
     def add(self, state, next_state, action, reward, done, skill):
         self._s[self._ind, :] = state
