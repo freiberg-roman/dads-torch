@@ -26,8 +26,8 @@ class ValueNetwork(nn.Module):
         self.apply(weights_init_)
 
     def forward(self, state):
-        x = F.relu(self.linear1(state))
-        x = F.relu(self.linear2(x))
+        x = F.silu(self.linear1(state))
+        x = F.silu(self.linear2(x))
         x = self.linear3(x)
         return x
 
@@ -52,7 +52,7 @@ class QNetwork(nn.Module):
         xu = torch.cat([state, action], 1)
 
         x1 = F.silu(self.linear1(xu))
-        x1 = F.sile(self.linear2(x1))
+        x1 = F.silu(self.linear2(x1))
         x1 = self.linear3(x1)
 
         x2 = F.silu(self.linear4(xu))
