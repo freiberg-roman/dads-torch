@@ -1,10 +1,22 @@
 import torch
 from dads.models import MixtureOfExperts
 from torch.optim import Adam
+from omegaconf.omegaconf import OmegaConf
+
+cfg_model = OmegaConf.create(
+    {
+        "name": "MixtureOfExperts",
+        "device": "cpu",
+        "hidden_dim": 512,
+        "num_experts": 4,
+        "lr": 0.0003,
+        "env": {"state_dim": 5, "skill_dim": 4, "num_coordinates": 1},
+    }
+)
 
 
 def test_simple_forward():
-    skill_model = MixtureOfExperts(state_dim=5, skill_dim=4)
+    skill_model = MixtureOfExperts(cfg_model, prep_input_fn=lambda x: x[..., 1:])
 
     # create data with batch size 100
     states = torch.randn(100, 5)
@@ -16,7 +28,9 @@ def test_simple_forward():
 
 
 def test_compute_log_prob():
-    skill_model = MixtureOfExperts(state_dim=10, skill_dim=3)
+    cfg_model.env.state_dim = 10
+    cfg_model.env.skill_dim = 3
+    skill_model = MixtureOfExperts(cfg_model, prep_input_fn=lambda x: x[..., 1:])
 
     # create data with batch size 100
     states = torch.randn(100, 10)
@@ -28,7 +42,10 @@ def test_compute_log_prob():
 
 
 def test_simple_backprop():
-    skill_model = MixtureOfExperts(state_dim=3, skill_dim=18)
+    cfg_model.env.state_dim = 3
+    cfg_model.env.skill_dim = 18
+    cfg_model.env.num_coordinates = 0
+    skill_model = MixtureOfExperts(cfg_model)
     optimizer = Adam(skill_model.parameters(), lr=0.0003)
 
     # create data with batch size 100
@@ -43,7 +60,10 @@ def test_simple_backprop():
 
 
 def test_pred_next_state_deterministic():
-    skill_model = MixtureOfExperts(state_dim=3, skill_dim=18)
+    cfg_model.env.state_dim = 3
+    cfg_model.env.skill_dim = 18
+    cfg_model.env.num_coordinates = 0
+    skill_model = MixtureOfExperts(cfg_model)
 
     # create data with batch size 100
     states = torch.randn(100, 3)
@@ -54,7 +74,10 @@ def test_pred_next_state_deterministic():
 
 
 def test_pred_next_state_random():
-    skill_model = MixtureOfExperts(state_dim=3, skill_dim=18)
+    cfg_model.env.state_dim = 3
+    cfg_model.env.skill_dim = 18
+    cfg_model.env.num_coordinates = 0
+    skill_model = MixtureOfExperts(cfg_model)
 
     # create data with batch size 100
     states = torch.randn(100, 3)

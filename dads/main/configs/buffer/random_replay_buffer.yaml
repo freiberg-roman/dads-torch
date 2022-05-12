@@ -1,0 +1,9 @@
+name: "RandomRB"
+
+capacity: 200000
+
+env:
+  state_dim: ${overrides.state_dim}
+  action_dim: ${overrides.action_dim}
+  skill_dim: ${overrides.skill_dim}
+  skill_continuous: ${overrides.skill_continuous}

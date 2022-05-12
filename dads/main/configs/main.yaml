@@ -1,15 +1,19 @@
 defaults:
   - _self_
-  - env: ant
   - planner: mppi
   - train: off_policy
   - wandb: sweep
+  - model: moe
+  - agent: sac
+  - overrides: half_cheetah
+  - buffer: random_replay_buffer
 
-root_dir: "./exp"
-mode: "mppi_test"  # others are
+root_dir: "../experiments"
+mode: "dads_train"  # others are
+device: "cpu"
 
 hydra:
   run:
-    dir: ${root_dir}/${mode}/${now:%Y.%m.%d}/${now:%H%M%S}
+    dir: ${root_dir}/${mode}/${now:%Y-%m-%d}/${now:%H-%M-%S}
   sweep:
-    dir: ${root_dir}/${mode}/${now:%Y.%m.%d}/${now:%H%M%S}
+    dir: ${root_dir}/${mode}/${now:%Y-%m-%d}/${now:%H-%M-%S}

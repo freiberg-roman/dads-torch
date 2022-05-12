@@ -1,0 +1,12 @@
+name: "MixtureOfExperts"
+
+device: ${device}
+
+hidden_dim: 512
+num_experts: 4
+lr: 0.0003
+
+env:
+  state_dim: ${overrides.state_dim}
+  skill_dim: ${overrides.skill_dim}
+  num_coordinates: ${overrides.num_coordinates}

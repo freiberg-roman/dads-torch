@@ -31,14 +31,16 @@ class HalfCheetahEnv(DadsEnvironment, Plannable):
         self.mujoco_env.unwrapped.sim.set_state(state)
 
     def step(self, action):
-        return self.mujoco_env.step(action)
+        _, rew, done, i = self.mujoco_env.step(action)
+        return self.get_obs(full=True), rew, done, i
 
     @property
     def done(self):
         return self.mujoco_env.done
 
     def reset(self):
-        return self.mujoco_env.reset()
+        self.mujoco_env.reset()
+        return self.get_obs(full=True)
 
     def sim_steps(self, init_state, actions):
         rew_sum = 0
@@ -54,11 +56,5 @@ class HalfCheetahEnv(DadsEnvironment, Plannable):
                 rew_sum += reward
         return state, rew_sum
 
-    @staticmethod
-    def get_env_conf():
-        return OmegaConf.create(
-            {
-                "state_dim": 17,
-                "action_dim": 6,
-            }
-        )
+    def prep_state(self, state):
+        return state[..., 1:]

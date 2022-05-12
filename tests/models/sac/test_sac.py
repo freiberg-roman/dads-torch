@@ -8,9 +8,19 @@ from dads.utils import RandomRB
 
 
 def test_simple_sac_routine():
+    env_cfg = OmegaConf.create(
+        {
+            "name": "HalfCheetah",
+            "state_dim": 18,
+            "action_dim": 6,
+            "num_coordinates": 1,
+            "skill_dim": 2,
+            "skill_continuous": True,
+        }
+    )
 
-    hc_env: SkillEnvironment = create_env("HalfCheetah")
-    buffer_cfg = OmegaConf.create({"capacity": 10000, "env": hc_env.get_env_cfg()})
+    hc_env: SkillEnvironment = create_env(env_cfg)
+    buffer_cfg = OmegaConf.create({"capacity": 10000, "env": env_cfg})
 
     sac_cfg = OmegaConf.create(
         {
@@ -19,14 +29,14 @@ def test_simple_sac_routine():
             "alpha": 0.05,
             "target_update_interval": 1,
             "automatic_entropy_tuning": True,
-            "cuda": False,
+            "device": "cpu",
             "hidden_size": 1024,
             "lr": 0.0003,
-            "env": hc_env.get_env_cfg(),
+            "env": env_cfg,
         }
     )
 
-    sac_agent = SAC(sac_cfg)
+    sac_agent = SAC(sac_cfg, prep_state_fn=hc_env.prep_state())
     buffer = RandomRB(buffer_cfg)
 
     # Fill buffer
@@ -41,4 +51,4 @@ def test_simple_sac_routine():
             s, r, d, i, skill = hc_env.reset()
 
     for batch in buffer.get_iter(it=10, batch_size=100):
-        sac_agent.update_parameters(batch, 1)
+        sac_agent.update_parameters(batch)

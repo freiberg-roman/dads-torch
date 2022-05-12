@@ -10,4 +10,4 @@ output/
 saved_models/
 env_test.py
 dkitty_eval.sh
-exp/
+experiments/

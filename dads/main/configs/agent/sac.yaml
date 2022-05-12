@@ -1,0 +1,13 @@
+gamma: 0.99
+tau: 0.0005
+alpha: 0.05
+target_update_interval: 1
+automatic_entropy_tuning: True
+hidden_size: 1024
+lr: 0.0003
+device: ${device}
+
+env:
+  state_dim: ${overrides.state_dim}
+  action_dim: ${overrides.action_dim}
+  num_coordinates: ${overrides.num_coordinates}

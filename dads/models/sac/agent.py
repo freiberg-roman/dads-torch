@@ -10,7 +10,7 @@ from dads.utils.math_helper import hard_update, soft_update
 
 
 class SAC:
-    def __init__(self, cfg):
+    def __init__(self, cfg, prep_state_fn=lambda x: x):
 
         self.gamma = cfg.gamma
         self.tau = cfg.tau
@@ -19,15 +19,20 @@ class SAC:
         self.target_update_interval = cfg.target_update_interval
         self.automatic_entropy_tuning = cfg.automatic_entropy_tuning
 
-        self.device = torch.device("cuda" if cfg.cuda else "cpu")
+        self.prep_state_fn = prep_state_fn
+        self.device = torch.device("cuda" if cfg.device == "cuda" else "cpu")
 
         self.critic = QNetwork(
-            cfg.env.state_dim, cfg.env.action_dim, cfg.hidden_size
+            cfg.env.state_dim - cfg.env.num_coordinates,
+            cfg.env.action_dim,
+            cfg.hidden_size,
         ).to(device=self.device)
         self.critic_optim = Adam(self.critic.parameters(), lr=cfg.lr)
 
         self.critic_target = QNetwork(
-            cfg.env.state_dim, cfg.env.action_dim, cfg.hidden_size
+            cfg.env.state_dim - cfg.env.num_coordinates,
+            cfg.env.action_dim,
+            cfg.hidden_size,
         ).to(self.device)
         hard_update(self.critic_target, self.critic)
 
@@ -40,11 +45,14 @@ class SAC:
             self.alpha_optim = Adam([self.log_alpha], lr=cfg.lr)
 
         self.policy = GaussianPolicy(
-            cfg.env.state_dim, cfg.env.action_dim, cfg.hidden_size
+            cfg.env.state_dim - cfg.env.num_coordinates,
+            cfg.env.action_dim,
+            cfg.hidden_size,
         ).to(self.device)
         self.policy_optim = Adam(self.policy.parameters(), lr=cfg.lr)
 
     def select_action(self, state, evaluate=False):
+        state = self.prep_state_fn(state)
         state = torch.FloatTensor(state).to(self.device).unsqueeze(0)
         if evaluate is False:
             action, _, _ = self.policy.sample(state)
@@ -52,34 +60,26 @@ class SAC:
             _, _, action = self.policy.sample(state)
         return action.detach().cpu().numpy()[0]
 
-    def update_parameters(self, batch: EnvSteps, updates):
+    def update_parameters(self, batch: EnvSteps):
         # Sample a batch from memory
-        state_batch = batch.states
-        action_batch = batch.actions
-        reward_batch = batch.rewards
-        next_state_batch = batch.next_states
-        done_batch = batch.dones
-
-        state_batch = torch.FloatTensor(state_batch).to(self.device)
-        next_state_batch = torch.FloatTensor(next_state_batch).to(self.device)
-        action_batch = torch.FloatTensor(action_batch).to(self.device)
-        reward_batch = torch.FloatTensor(reward_batch).to(self.device).unsqueeze(1)
-        done_batch = torch.FloatTensor(done_batch).to(self.device).unsqueeze(1)
+        states, next_states, actions, rewards, dones, _ = batch.to_torch_batch()
+        states = self.prep_state_fn(states)
+        next_states = self.prep_state_fn(next_states)
 
         with torch.no_grad():
-            next_state_action, next_state_log_pi, _ = self.policy.sample(
-                next_state_batch
-            )
+            next_state_action, next_state_log_pi, _ = self.policy.sample(next_states)
             qf1_next_target, qf2_next_target = self.critic_target(
-                next_state_batch, next_state_action
+                next_states, next_state_action
             )
             min_qf_next_target = (
                 torch.min(qf1_next_target, qf2_next_target)
                 - self.alpha * next_state_log_pi
             )
-            next_q_value = reward_batch + done_batch * self.gamma * (min_qf_next_target)
+            next_q_value = rewards + (1 - dones.to(torch.float32)) * self.gamma * (
+                min_qf_next_target
+            )
         qf1, qf2 = self.critic(
-            state_batch, action_batch
+            states, actions
         )  # Two Q-functions to mitigate positive bias in the policy improvement step
         qf1_loss = F.mse_loss(
             qf1, next_q_value
@@ -93,9 +93,9 @@ class SAC:
         qf_loss.backward()
         self.critic_optim.step()
 
-        pi, log_pi, _ = self.policy.sample(state_batch)
+        pi, log_pi, _ = self.policy.sample(states)
 
-        qf1_pi, qf2_pi = self.critic(state_batch, pi)
+        qf1_pi, qf2_pi = self.critic(states, pi)
         min_qf_pi = torch.min(qf1_pi, qf2_pi)
 
         policy_loss = (
@@ -121,8 +121,7 @@ class SAC:
             alpha_loss = torch.tensor(0.0).to(self.device)
             alpha_tlogs = torch.tensor(self.alpha)  # For TensorboardX logs
 
-        if updates % self.target_update_interval == 0:
-            soft_update(self.critic_target, self.critic, self.tau)
+        soft_update(self.critic_target, self.critic, self.tau)
 
         return (
             qf1_loss.item(),
