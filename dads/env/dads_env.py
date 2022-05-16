@@ -30,6 +30,16 @@ class DadsEnvironment(ABC):
     def reset(self):
         pass
 
+    @property
+    @abstractmethod
+    def name(self):
+        pass
+
+    @property
+    @abstractmethod
+    def gym_env(self):
+        pass
+
     def __enter__(self):
         self._state = self.get_state()
         return self

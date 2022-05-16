@@ -91,12 +91,16 @@ class MixtureOfExperts(nn.Module):
         state = state.repeat(L, 1)
         next_state = next_state.repeat(L, 1)
         with torch.no_grad():
-            model_prob_samples = (
-                self.log_prob(state, skill_samples, next_state).exp().sum(axis=0)
-            )
+            log_prob_samples = self.log_prob(state, skill_samples, next_state)
         self.train()
         return (
-            model_log_prob - torch.log(model_prob_samples) + torch.log(torch.tensor(L))
+            torch.log(torch.tensor(L) + 1)
+            - torch.log(
+                1
+                + torch.exp(torch.clip(log_prob_samples - model_log_prob, -50, 50)).sum(
+                    axis=0
+                )
+            )
         ).item()
 
     def update_parameters(self, batch, optimizer: torch.optim.Optimizer):

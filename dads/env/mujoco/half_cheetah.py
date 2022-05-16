@@ -9,6 +9,7 @@ from dads.env.plannable import Plannable
 class HalfCheetahEnv(DadsEnvironment, Plannable):
     def __init__(self):
         self.mujoco_env = gym.make("HalfCheetah-v3")
+        self._name = "HalfCheetah"
 
     def get_obs(self, full=True):
         # first entry corresponds to x-position in simulation
@@ -58,3 +59,11 @@ class HalfCheetahEnv(DadsEnvironment, Plannable):
 
     def prep_state(self, state):
         return state[..., 1:]
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def gym_env(self):
+        return self.mujoco_env

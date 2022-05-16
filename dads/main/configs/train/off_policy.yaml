@@ -2,8 +2,8 @@ load_checkpoint: ""  # if empty training will be from scratch
 
 total_steps: 1000000
 steps_per_epoch: 5000
-update_model_every: 5
-update_agent_every: 5
+update_model_every: 10
+update_agent_every: 10
 
 reward_sampling_amount: 500
-batch_size: 64
+batch_size: 128

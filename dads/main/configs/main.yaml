@@ -9,7 +9,7 @@ defaults:
   - buffer: random_replay_buffer
 
 root_dir: "../experiments"
-mode: "dads_train"  # others are
+mode: "train_dads"  # others are
 device: "cpu"
 
 hydra:

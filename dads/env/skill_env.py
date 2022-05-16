@@ -1,4 +1,5 @@
 import numpy as np
+from gym.wrappers.record_video import RecordVideo
 from omegaconf.omegaconf import OmegaConf
 
 from .dads_env import DadsEnvironment
@@ -12,6 +13,7 @@ class SkillEnvironment:
         skill_dim=2,
         skill_continuous=True,
         skill_sampling="uniform",
+        record=False,
     ):
         self._env = env
         self._env_conf: OmegaConf = env_conf
@@ -23,6 +25,11 @@ class SkillEnvironment:
         self._env_conf.skill_continuous = skill_continuous
         self._env_conf.skill_dim = skill_dim
         self._total_steps = 0
+        if record:
+            self._video_recorder = RecordVideo(
+                self._env.gym_env, video_folder="./video"
+            )
+            self._video_recorder.start_video_recorder()
 
     def gen_skill(self):
         if self._skill_type == "continues":

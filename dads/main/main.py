@@ -2,7 +2,7 @@ import hydra
 from omegaconf import DictConfig, OmegaConf
 
 from dads.env import create_env
-from dads.main.dads_routines import dads_train
+from dads.main.dads_routines import train_dads, train_sac
 from dads.planners import MPPIOptimizer
 
 
@@ -19,12 +19,11 @@ def run(cfg: DictConfig):
             _, reward, done, _ = env.step(act)
             print("Current reward: ", reward)
 
-    if cfg.mode == "sac_train":
-        env = create_env(cfg.env.name)
-        # TODO
+    if cfg.mode == "train_sac":
+        train_sac(cfg)
 
-    if cfg.mode == "dads_train":
-        dads_train(cfg)
+    if cfg.mode == "train_dads":
+        train_dads(cfg)
 
     print(OmegaConf.to_yaml(cfg))
 
