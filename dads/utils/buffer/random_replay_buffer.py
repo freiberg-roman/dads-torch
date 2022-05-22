@@ -1,93 +1,9 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 
 import numpy as np
-import torch
 
-
-@dataclass
-class EnvStep:
-    state: np.ndarray
-    next_state: np.ndarray
-    action: np.ndarray
-    reward: float
-    done: bool
-    skill: float
-
-    def to_torch_batch(self):
-        return (
-            torch.unsqueeze(torch.from_numpy(self.state).to(torch.float32), 0),
-            torch.unsqueeze(torch.from_numpy(self.next_state).to(torch.float32), 0),
-            torch.unsqueeze(torch.from_numpy(self.action).to(torch.float32), 0),
-            torch.unsqueeze(torch.tensor(self.reward).to(torch.float32), 0),
-            torch.unsqueeze(torch.tensor(self.done), 0),
-            torch.unsqueeze(torch.from_numpy(self.skill).to(torch.float32), 0),
-        )
-
-
-@dataclass
-class EnvSteps:
-    states: np.ndarray
-    next_states: np.ndarray
-    actions: np.ndarray
-    rewards: np.ndarray
-    dones: np.ndarray
-    skills: np.ndarray
-
-    def __len__(self):
-        return len(self.states)
-
-    def to_torch_batch(self):
-        return (
-            torch.from_numpy(self.states),
-            torch.from_numpy(self.next_states),
-            torch.from_numpy(self.actions),
-            torch.unsqueeze(torch.from_numpy(self.rewards), 1),
-            torch.unsqueeze(torch.from_numpy(self.dones), 1),
-            torch.from_numpy(self.skills),
-        )
-
-
-class ReplayBuffer(ABC):
-    @abstractmethod
-    def add(self, state, next_state, action, reward, done, skill):
-        pass
-
-    def add_step(self, time_step: EnvStep):
-        self.add(
-            time_step.state,
-            time_step.next_state,
-            time_step.action,
-            time_step.reward,
-            time_step.done,
-            time_step.skill,
-        )
-
-    @abstractmethod
-    def add_batch(self, states, next_states, actions, rewards, dones, skills):
-        pass
-
-    def add_batch_steps(self, time_steps: EnvSteps):
-        self.add_batch(
-            time_steps.states,
-            time_steps.next_states,
-            time_steps.actions,
-            time_steps.rewards,
-            time_steps.dones,
-            time_steps.skills,
-        )
-
-    @abstractmethod
-    def get_iter(self, it, batch_size):
-        pass
-
-    @abstractmethod
-    def __getitem__(self, item):
-        pass
-
-    @abstractmethod
-    def __len__(self):
-        return 0
+from dads.utils.buffer import EnvStep, EnvSteps
+from dads.utils.buffer.replay_buffer import ReplayBuffer
 
 
 class RandomRB(ReplayBuffer):

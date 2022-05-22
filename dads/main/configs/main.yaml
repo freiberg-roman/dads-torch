@@ -5,11 +5,11 @@ defaults:
   - wandb: sweep
   - model: moe
   - agent: sac
-  - overrides: half_cheetah
+  - overrides: dads_hc
   - buffer: random_replay_buffer
 
 root_dir: "../experiments"
-mode: "train_dads"  # others are
+mode: "train_dads"  # others are train_sac
 device: "cpu"
 
 hydra:

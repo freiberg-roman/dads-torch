@@ -21,16 +21,17 @@ class SAC:
 
         self.prep_state_fn = prep_state_fn
         self.device = torch.device("cuda" if cfg.device == "cuda" else "cpu")
+        self.use_state_and_skill = cfg.env.skill_dim != 0
 
         self.critic = QNetwork(
-            cfg.env.state_dim - cfg.env.num_coordinates,
+            cfg.env.state_dim + cfg.env.skill_dim - cfg.env.num_coordinates,
             cfg.env.action_dim,
             cfg.hidden_size,
         ).to(device=self.device)
         self.critic_optim = Adam(self.critic.parameters(), lr=cfg.lr)
 
         self.critic_target = QNetwork(
-            cfg.env.state_dim - cfg.env.num_coordinates,
+            cfg.env.state_dim + cfg.env.skill_dim - cfg.env.num_coordinates,
             cfg.env.action_dim,
             cfg.hidden_size,
         ).to(self.device)
@@ -45,15 +46,19 @@ class SAC:
             self.alpha_optim = Adam([self.log_alpha], lr=cfg.lr)
 
         self.policy = GaussianPolicy(
-            cfg.env.state_dim - cfg.env.num_coordinates,
+            cfg.env.state_dim + cfg.env.skill_dim - cfg.env.num_coordinates,
             cfg.env.action_dim,
             cfg.hidden_size,
         ).to(self.device)
         self.policy_optim = Adam(self.policy.parameters(), lr=cfg.lr)
 
-    def select_action(self, state, evaluate=False):
+    def select_action(self, state, skill=None, evaluate=False):
         state = self.prep_state_fn(state)
         state = torch.FloatTensor(state).to(self.device).unsqueeze(0)
+        if self.use_state_and_skill:
+            skill = torch.FloatTensor(skill).to(self.device).unsqueeze(0)
+            state = torch.cat((state, skill), dim=1)
+
         if evaluate is False:
             action, _, _ = self.policy.sample(state)
         else:
@@ -62,9 +67,12 @@ class SAC:
 
     def update_parameters(self, batch: EnvSteps):
         # Sample a batch from memory
-        states, next_states, actions, rewards, dones, _ = batch.to_torch_batch()
+        states, next_states, actions, rewards, dones, skills = batch.to_torch_batch()
         states = self.prep_state_fn(states)
         next_states = self.prep_state_fn(next_states)
+        if self.use_state_and_skill:
+            states = torch.cat((states, skills), dim=1)
+            next_states = torch.cat((next_states, skills), dim=1)
 
         with torch.no_grad():
             next_state_action, next_state_log_pi, _ = self.policy.sample(next_states)

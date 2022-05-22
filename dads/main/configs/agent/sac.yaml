@@ -10,4 +10,5 @@ device: ${device}
 env:
   state_dim: ${overrides.state_dim}
   action_dim: ${overrides.action_dim}
+  skill_dim: ${overrides.skill_dim}
   num_coordinates: ${overrides.num_coordinates}

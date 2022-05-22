@@ -22,7 +22,7 @@ def train_dads(cfg):
         # epoch
         for i in tqdm(range(cfg.train.steps_per_epoch)):
             # collect steps and compute intrinsic reward
-            action = agent.select_action(state)
+            action = agent.select_action(state, skill)
             next_state, reward, done, _, skill = env.step(action)
             reward = model.intrinsic_rew(
                 EnvStep(state, next_state, action, 0.0, False, skill),
@@ -52,7 +52,7 @@ def train_dads(cfg):
 
 
 def train_sac(cfg):
-    env = create_env(cfg.overrides, record=True)
+    env = create_env(cfg.overrides)
     buffer = RandomRB(cfg.buffer)
     agent = SAC(cfg.agent, env.prep_state())
 
@@ -60,7 +60,7 @@ def train_sac(cfg):
     total_reward = 0
     while env.total_steps < cfg.train.total_steps:
         # epoch
-        for i in range(cfg.train.steps_per_epoch):
+        for i in tqdm(range(cfg.train.steps_per_epoch)):
             # collect steps and compute intrinsic reward
             action = agent.select_action(state)
             next_state, reward, done, _, skill = env.step(action)

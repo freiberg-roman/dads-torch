@@ -3,7 +3,6 @@ from omegaconf import OmegaConf
 from dads.env import SkillEnvironment
 from dads.models import SAC
 from dads.env import create_env
-from dads.env import HalfCheetahEnv
 from dads.utils import RandomRB
 
 
@@ -42,7 +41,7 @@ def test_simple_sac_routine():
     # Fill buffer
     s, skill = hc_env.reset()
     for _ in range(100):
-        a = sac_agent.select_action(s)
+        a = sac_agent.select_action(s, skill)
         s_n, r, d, i, skill = hc_env.step(a)
         buffer.add(s, s_n, a, r, d, skill)
         s = s_n
