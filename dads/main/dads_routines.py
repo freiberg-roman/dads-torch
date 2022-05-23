@@ -15,9 +15,12 @@ def train_dads(cfg):
     model_optimizer = Adam(model.parameters(), lr=cfg.model.lr)
 
     if cfg.train.load_checkpoint != "":
-        pass
-
-    state, skill = env.reset()
+        state, skill = env.load(cfg.train.load_checkpoint)
+        buffer.load(cfg.train.load_checkpoint)
+        agent.load(cfg.train.load_checkpoint)
+        model.load(cfg.train.load_checkpoint)
+    else:
+        state, skill = env.reset()
     while env.total_steps < cfg.train.total_steps:
         # epoch
         for i in tqdm(range(cfg.train.steps_per_epoch)):
@@ -48,7 +51,13 @@ def train_dads(cfg):
                     agent.update_parameters(batch)
 
         # end of epoch saving
-        print("epoch done")
+        env.save(cfg.train.path_to_checkpoint, str(env.total_steps))
+        buffer.save(cfg.train.path_to_checkpoint, str(env.total_steps))
+        agent.save(cfg.train.path_to_checkpoint, str(env.total_steps))
+        model.save(cfg.train.path_to_checkpoint, str(env.total_steps))
+
+        # end of epoch evaluation
+        print(80 * "=", "\n", "epoch done", "\n", 80 * "=")
 
 
 def train_sac(cfg):

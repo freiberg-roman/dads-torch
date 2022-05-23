@@ -84,13 +84,6 @@ class SequenceRB(ReplayBuffer):
         """
         return TrueKSequenceIter(self, it, k)
 
-    def get_all_k_sequence_iter(self, it, k):
-        """
-        Returns k-step sequences which can come from multiple sequences.
-        Sequences are still to be guaranteed to be added in consecutive order.
-        """
-        return AllKSequenceIter(self, it, k)
-
     def _remove_overlapping_seqs(self, seq_boundaries):
         start, end = seq_boundaries
         self._valid_seq.sort(key=lambda x: x[0])  # sort after valid starts
@@ -212,19 +205,6 @@ class VirtualSequenceIter:
             )
         else:
             raise StopIteration
-
-
-class AllKSequenceIter:
-    def __init__(self, buffer: SequenceRB, it: int):
-        self._buffer = buffer
-        self._it = it
-        self._current_it = 0
-
-    def __iter__(self):
-        pass
-
-    def __next__(self):
-        pass
 
 
 class TrueKSequenceIter:

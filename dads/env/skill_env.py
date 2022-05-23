@@ -1,4 +1,5 @@
 import copy
+from pathlib import Path
 
 import numpy as np
 from omegaconf.omegaconf import OmegaConf
@@ -13,7 +14,6 @@ class SkillEnvironment:
         env_conf,
         skill_dim=2,
         skill_continuous=True,
-        skill_sampling="uniform",
     ):
         self._env = env
         self._env_conf: OmegaConf = copy.deepcopy(env_conf)
@@ -64,3 +64,24 @@ class SkillEnvironment:
 
     def get_env_cfg(self):
         return self._env_conf
+
+    def save(self, base_path, folder):
+        path_folder = base_path + folder + "/env/"
+        Path(path_folder).mkdir(parents=True, exist_ok=True)
+        state = self._env.gym_env.env.sim.get_state().flatten()
+        np.save(path_folder + "sim_state.npy", state)
+        np.save(
+            path_folder + "total_steps.npy", np.array([self._total_steps], dtype=int)
+        )
+        np.save(path_folder + "skill.npy", self._skill)
+
+    def load(self, path):
+        env_path = path + "/env/"
+        self._env.reset()
+        self._env.gym_env.env.sim.set_state_from_flattened(
+            np.load(env_path + "sim_state.npy")
+        )
+        self._total_steps = np.load(env_path + "total_steps.npy").item()
+        self._skill = np.load(env_path + "skill.npy")
+
+        return self._env.get_obs(full=True), self._skill

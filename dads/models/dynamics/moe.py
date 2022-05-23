@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -115,3 +117,16 @@ class MixtureOfExperts(nn.Module):
 
     def to(self):
         pass  # TODO
+
+    def save(self, base_path, folder):
+        path = base_path + folder + "/moe/"
+        Path(path).mkdir(parents=True, exist_ok=True)
+        torch.save(self.state_dict(), path + "model.pt")
+
+    def load(self, path, train=True):
+        path = path + "moe/model.pt"
+        self.load_state_dict(torch.load(path))
+        if train:
+            self.train()
+        else:
+            self.eval()

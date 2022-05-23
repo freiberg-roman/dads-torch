@@ -1,9 +1,11 @@
-load_checkpoint: ""  # if empty training will be from scratch
+load_checkpoint: "/home/freiberg/doc/master/data/train_dads/250/"  # if empty training will be from scratch
+# load_checkpoint: ""
+path_to_checkpoint: "/home/freiberg/doc/master/data/train_dads/"
 
 total_steps: 1000000
-steps_per_epoch: 500
-update_model_every: 10
-update_agent_every: 10
+steps_per_epoch: 5000
+update_model_every: 50
+update_agent_every: 50
 
 reward_sampling_amount: 500
 batch_size: 128

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import torch
 import torch.nn.functional as F
@@ -140,12 +141,9 @@ class SAC:
         )
 
     # Save model parameters
-    def save_checkpoint(self, env_name, suffix="", ckpt_path=None):
-        if not os.path.exists("checkpoints/"):
-            os.makedirs("checkpoints/")
-        if ckpt_path is None:
-            ckpt_path = "checkpoints/sac_checkpoint_{}_{}".format(env_name, suffix)
-        print("Saving models to {}".format(ckpt_path))
+    def save(self, base_path, folder):
+        path = base_path + folder + "/sac/"
+        Path(path).mkdir(parents=True, exist_ok=True)
         torch.save(
             {
                 "policy_state_dict": self.policy.state_dict(),
@@ -154,12 +152,12 @@ class SAC:
                 "critic_optimizer_state_dict": self.critic_optim.state_dict(),
                 "policy_optimizer_state_dict": self.policy_optim.state_dict(),
             },
-            ckpt_path,
+            path + "model.pt",
         )
 
     # Load model parameters
-    def load_checkpoint(self, ckpt_path, evaluate=False):
-        print("Loading models from {}".format(ckpt_path))
+    def load(self, path, evaluate=False):
+        ckpt_path = path + "/sac/model.pt"
         if ckpt_path is not None:
             checkpoint = torch.load(ckpt_path)
             self.policy.load_state_dict(checkpoint["policy_state_dict"])

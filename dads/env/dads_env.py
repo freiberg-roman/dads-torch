@@ -14,7 +14,7 @@ class DadsEnvironment(ABC):
         pass
 
     @abstractmethod
-    def get_obs(self):
+    def get_obs(self, full=True):
         pass
 
     @abstractmethod

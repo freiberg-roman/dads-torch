@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 import numpy as np
 
@@ -81,6 +82,29 @@ class RandomRB(ReplayBuffer):
     def __len__(self):
         return self._capacity
 
+    def save(self, base_path, folder):
+        path = base_path + folder + "/rrb/"
+        Path(path).mkdir(parents=True, exist_ok=True)
+        np.save(path + "state.npy", self._s)
+        np.save(path + "next_state.npy", self._next_s)
+        np.save(path + "actions.npy", self._acts)
+        np.save(path + "rewards.npy", self._rews)
+        np.save(path + "dones.npy", self._dones)
+        np.save(path + "skills.npy", self._skills)
+        np.save(path + "capacity.npy", np.array([self._capacity], dtype=int))
+        np.save(path + "index.npy", np.array([self._ind], dtype=int))
+
+    def load(self, path):
+        path = path + "/rrb/"
+        self._s = np.load(path + "state.npy")
+        self._next_s = np.load(path + "next_state.npy")
+        self._acts = np.load(path + "actions.npy")
+        self._rews = np.load(path + "rewards.npy")
+        self._dones = np.load(path + "dones.npy")
+        self._skills = np.load(path + "skills.npy")
+        self._capacity = np.load(path + "capacity.npy").item()
+        self._ind = np.load(path + "index.npy").item()
+
 
 class RandomValidationRB(ReplayBuffer):
     def __init__(self, cfg, val_percentage):
@@ -157,3 +181,16 @@ class RandomBatchIter:
             )
         else:
             raise StopIteration
+
+
+class AllKSequenceIter:
+    def __init__(self, buffer: RandomRB, it: int):
+        self._buffer = buffer
+        self._it = it
+        self._current_it = 0
+
+    def __iter__(self):
+        pass
+
+    def __next__(self):
+        pass
