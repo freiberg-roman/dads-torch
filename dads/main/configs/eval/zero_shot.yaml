@@ -1,0 +1,5 @@
+load_agent: "/home/freiberg/doc/master/data/train_dads/500"
+load_model: "/home/freiberg/doc/master/data/train_dads/500/"
+
+trials: 1
+

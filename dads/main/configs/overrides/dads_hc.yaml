@@ -2,7 +2,11 @@ name: "HalfCheetah"
 
 state_dim: 18  # note: this includes coordinate dimensions, which are not present in default observations
 action_dim: 6
+action_lower_bound: [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+action_upper_bound: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 num_coordinates: 1
 
 skill_dim: 2
+skill_lower_bound: [-1.0, -1.0]
+skill_upper_bound: [1.0, 1.0]
 skill_continuous: True

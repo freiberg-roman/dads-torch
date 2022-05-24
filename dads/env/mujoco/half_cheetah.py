@@ -60,6 +60,10 @@ class HalfCheetahEnv(DadsEnvironment, Plannable):
     def prep_state(self, state):
         return state[..., 1:]
 
+    def env_reward(self, state, next_state):
+        delta = next_state[:, 0] - state[:, 0]
+        return delta / self.mujoco_env.dt
+
     @property
     def name(self):
         return self._name

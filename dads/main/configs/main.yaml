@@ -2,6 +2,7 @@ defaults:
   - _self_
   - planner: mppi
   - train: off_policy
+  - eval: zero_shot
   - wandb: sweep
   - model: moe
   - agent: sac
@@ -9,7 +10,7 @@ defaults:
   - buffer: random_replay_buffer
 
 root_dir: "../experiments"
-mode: "train_dads"  # others are train_sac
+mode: "eval_dads"  # others are train_sac, eval_dads
 device: "cpu"
 
 hydra:

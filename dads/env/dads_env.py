@@ -40,6 +40,10 @@ class DadsEnvironment(ABC):
     def gym_env(self):
         pass
 
+    @abstractmethod
+    def env_reward(self, state, next_state):
+        pass
+
     def __enter__(self):
         self._state = self.get_state()
         return self

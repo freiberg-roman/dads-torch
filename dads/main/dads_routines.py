@@ -3,6 +3,7 @@ from tqdm import tqdm
 
 from dads.env import create_env
 from dads.models import SAC, MixtureOfExperts
+from dads.planners import MPPIOptimizer
 from dads.utils import EnvStep, RandomRB
 
 
@@ -95,3 +96,37 @@ def train_sac(cfg):
                     agent.update_parameters(batch)
 
         # end of epoch saving
+
+
+def eval_dads(cfg):
+    env = create_env(cfg.overrides)
+    agent = SAC(cfg.agent, env.prep_state())
+    agent.load(cfg.eval.load_agent, evaluate=True)
+
+    model = MixtureOfExperts(cfg.model, prep_input_fn=env.prep_state())
+    model.load(cfg.eval.load_model)
+    model.eval()
+
+    optimizer = MPPIOptimizer(
+        cfg.planner, agent=agent, plannable=model, env_reward=env.env_reward
+    )
+
+    for trial in range(cfg.eval.trials):
+        accumulated_reward = 0
+        state, _ = env.reset()
+        done = False
+
+        while not done:
+            skill = optimizer(init_state=state)
+
+            # execute skill for H_z steps
+            for _ in range(cfg.planner.horizon_z):
+                action = agent.select_action(state, skill)
+                next_state, reward, done, _, _ = env.step(action)
+                accumulated_reward += reward
+                state = next_state
+
+                if done:
+                    break
+
+        print("reward of trial: ", str(trial), " is ", accumulated_reward)

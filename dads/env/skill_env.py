@@ -85,3 +85,7 @@ class SkillEnvironment:
         self._skill = np.load(env_path + "skill.npy")
 
         return self._env.get_obs(full=True), self._skill
+
+    @property
+    def env_reward(self):
+        return self._env.env_reward

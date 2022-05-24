@@ -1,0 +1,13 @@
+horizon_planning: 5
+horizon_z: 10
+
+beta: 0.9
+sigma: 0.5
+gamma: 10
+refinements: 10
+population_size: 256
+
+env:
+  skill_dim: ${overrides.skill_dim}
+  skill_lower_bound: ${overrides.skill_lower_bound}
+  skill_upper_bound: ${overrides.skill_upper_bound}
