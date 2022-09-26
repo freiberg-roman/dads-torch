@@ -33,7 +33,7 @@ class MixtureOfExperts(nn.Module):
 
         for _ in range(cfg.num_experts):
             self.expert_heads.append(nn.Linear(cfg.hidden_dim, cfg.env.state_dim))
-
+        self.expert_heads = nn.ModuleList(self.expert_heads)
         self._skill_dim = cfg.env.skill_dim
 
     def forward(self, state, skill):
