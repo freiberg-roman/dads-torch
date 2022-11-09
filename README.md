@@ -1,3 +1,12 @@
+# Your task
+
+This project was initially used for my thesis and abandomed midway due to low priority. Hence, I am looking forward for your suggestions
+to finish up this implementation. The basic setup is done. You need to validate and test all components and reproduce the results of
+the original paper. As a tip, I would definatly start with the MixtureOfExperts model and compare it to the original implementation.
+(My suggestion would be to drop the batch normalization first and integrate it back after all other sources of error are eliminated.)
+Please read the Appendix in the original work, where most implentation details are hidden. Thanks for your help! I am looking forward for
+your PRs :)).
+
 Note: This project is still WIP. Benchmarks and further details will be added soon.
 # PyTorch implementation Dynamics-Aware Discovery of Skills (DADS).
 The ``dads-torch`` repository contains all modules needed for the implementation of [DADS](https://arxiv.org/abs/1907.01657).
