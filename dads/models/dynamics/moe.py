@@ -19,8 +19,9 @@ class MixtureOfExperts(nn.Module):
     ):
         super(MixtureOfExperts, self).__init__()
 
-        self.bn_in = nn.BatchNorm1d(cfg.env.state_dim - cfg.env.num_coordinates)
-        self.bb_out = nn.BatchNorm1d(cfg.env.state_dim)
+        # remove batch normalization in your initial experiments -> add back and debug later
+        # self.bn_in = nn.BatchNorm1d(cfg.env.state_dim - cfg.env.num_coordinates)
+        # self.bb_out = nn.BatchNorm1d(cfg.env.state_dim)
         self._prep_input_fn = prep_input_fn
 
         self.linear1 = nn.Linear(
@@ -37,7 +38,8 @@ class MixtureOfExperts(nn.Module):
         self._skill_dim = cfg.env.skill_dim
 
     def forward(self, state, skill):
-        n_state = self.bn_in(self._prep_input_fn(state))
+        # n_state = self.bn_in(self._prep_input_fn(state))
+        n_state = self._prep_input_fn(state)
         net_in = torch.cat([n_state, skill], 1)
 
         x1 = F.silu(self.linear1(net_in))
@@ -57,7 +59,8 @@ class MixtureOfExperts(nn.Module):
         return MixtureSameFamily(categorical_experts, ind_expert_dist)
 
     def log_prob(self, state, skill, next_state):
-        n_next_state_delta = self.bb_out(next_state - state)
+        # n_next_state_delta = self.bb_out(next_state - state)
+        n_next_state_delta = next_state - state
         prob = self.forward(state, skill)
         return prob.log_prob(n_next_state_delta)
 
@@ -73,10 +76,10 @@ class MixtureOfExperts(nn.Module):
             pred_delta = self.forward(state, skill).mean
 
         # denorm pred_delta
-        pred_delta = (
-            pred_delta * torch.sqrt(self.bb_out.running_var + self.bb_out.eps)
-            + self.bb_out.running_mean
-        )
+        # pred_delta = (
+        #   pred_delta * torch.sqrt(self.bb_out.running_var + self.bb_out.eps)
+        #   + self.bb_out.running_mean
+        # )
         return state + pred_delta
 
     @torch.no_grad()
