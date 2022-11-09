@@ -1,11 +1,6 @@
 # Your task
 
-This project was initially used for my thesis and abandomed midway due to low priority. Hence, I am looking forward for your suggestions
-to finish up this implementation. The basic setup is done. You need to validate and test all components and reproduce the results of
-the original paper. As a tip, I would definatly start with the MixtureOfExperts model and compare it to the original implementation.
-(My suggestion would be to drop the batch normalization first and integrate it back after all other sources of error are eliminated.)
-Please read the Appendix in the original work, where most implentation details are hidden. Thanks for your help! I am looking forward for
-your PRs :)).
+This project was originally used for my thesis and abandoned halfway due to low priority. Therefore, I look forward to your suggestions for completing this implementation. The basic structure is ready. You just need to validate and test all components and reproduce the results of the original work. As a tip, I would definitely start with the MixtureOfExperts model and compare it to the original implementation. (My suggestion would be to leave out the batch normalization for the time being and only integrate it again when all other sources of error have been eliminated). Please read the appendix of the original paper, where most of the implementation details are hidden. Thank you very much for your help! I am already looking forward to your PRs :)).
 
 Note: This project is still WIP. Benchmarks and further details will be added soon.
 # PyTorch implementation Dynamics-Aware Discovery of Skills (DADS).
